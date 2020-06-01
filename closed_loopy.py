@@ -8,9 +8,9 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 
 pub = rospy.Publisher('/pioneer_1/RosAria/cmd_vel', Twist, queue_size=10)
-goal = [0]
-eps = 0.00001
-flaga = 0
+goal = 0
+eps = 0.01
+flaga = 1
 
 def quat2angle(quat):
     ang = 2 * math.acos(quat.w)
@@ -39,25 +39,37 @@ def stop():
 def regulator(data):
     global goal
     global eps
-
-    #err = data.pose.pose.position.x - goal
-    #rospy.loginfo(err)
+    global flaga
+    druga_flaga = 0
     if flaga == 0:
-    	err = quat2angle(data.pose.pose.orientation) - goal[0]
-    	if math.fabs(err) < eps:
-		stop()
-    	set_velocity(0.0,0.1*-err)
+        #print("do przodu")
+        goal = 0
+        err = data.pose.pose.position.x - goal
+        #print(err)
+        if math.fabs(err) < eps:
+            stop()
+            goal = 0
+            flaga = 2
+        set_velocity(-err, 0)
     if flaga == 1:
-	err = data.pose.pose.position.x - goal[0]
-	if math.fabs(err) < eps:
-		stop()
-	set_velocity(1.0, 0.0)
+        #print("do tylu")
+        goal = -2
+        err = data.pose.pose.position.x - goal
+        if math.fabs(err) < eps:
+            stop()
+            goal = math.pi/16
+            flaga = 2
+        set_velocity(-err, 0)
     if flaga == 2:
-	err = data.pose.pose.position.y - goal[1]
-	if math.fabs(err) < eps:
-		stop()
-	set_velocity(1.0, 0.0)
-    rospy.loginfo(data.pose.pose.position)
+        err = quat2angle(data.pose.pose.orientation) - goal
+    	if math.fabs(err) < eps:
+	    stop()
+            if goal == math.pi/16:
+                flaga = 0
+            if goal == 0:
+                flaga = 1
+        set_velocity(0.0,-err)
+    #rospy.loginfo(data.pose.pose.position)
     #rospy.loginfo(data.pose.pose.orientation)
     #rospy.loginfo(quat2angle(data.pose.pose.orientation))
     
@@ -66,11 +78,20 @@ def control():
 
     rospy.init_node('control', anonymous=True)
     rospy.Subscriber('/pioneer_1/RosAria/pose',Odometry,regulator)
-    while True:
-	flaga = 0
-	goal = [math.pi/2]
-	flaga = 1
-	goal = [5, 0]
+        #rospy.sleep(2)
+        #goal = math.pi/4
+        #print("flaga = 2")
+        #flaga = 2
+        #rospy.sleep(2)
+        #print("flaga = 0")
+        #flaga = 0
+        #rospy.sleep(2)
+        #goal = 0
+        #print("flaga = 2")
+        #flaga = 2
+        #rospy.sleep(2)
+#	flaga = 0
+#	goal = math.pi/2
         #key = raw_input()
     	#if key == 'a':
 	#    goal = input()

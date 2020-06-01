@@ -39,7 +39,6 @@ def set_speedLP(lewe,prawe):
     # sin(theta)*u1  = sin(theta)*lewe + sin(theta)*prawe
     # u2            = -1/d*lewe + 1/d*prawe
     d = 0.163
-    #cr_vel_msg(math.cos(90)*lewe + math.cos(90)*prawe, math.sin(90)*lewe + math.sin(90)*prawe, 0.0, 0.0, 0.0, -1/d*lewe + 1/d*prawe)
     set_velocity(-1*(lewe+prawe), (-1/d*lewe +1/d*prawe))
     
 def talker():
